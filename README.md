@@ -5,7 +5,8 @@
 ![License](https://img.shields.io:/static/v1?label=License&message=MIT&color=blue)
 [![Parent Repository](https://img.shields.io:/static/v1?label=Parent&message=c2nes/javalang&color=lightgrey)](https://github.com/c2nes/javalang)
 
-> **Warning**: This repository aims to provide an implementation of an AIDL parser in Python. For information about the original repository, visit [c2nes/javalang](https://github.com/c2nes/javalang).
+> [!Warning]
+> This repository aims to provide an implementation of an AIDL parser in Python. For information about the original repository, visit [c2nes/javalang](https://github.com/c2nes/javalang).
 
 `aidl-parser` is a small Python library that can be used to lex and parse Android Interface Definition Language (AIDL) files as well as default Java files.
 
