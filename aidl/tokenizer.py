@@ -65,13 +65,19 @@ class Keyword(JavaToken):
                   'new', 'package', 'private', 'protected', 'public', 'return',
                   'short', 'static', 'strictfp', 'super', 'switch',
                   'synchronized', 'this', 'throw', 'throws', 'transient', 'try',
-                  'void', 'volatile', 'while', 'parcelable', 'union', 'oneway',
-                  'in', 'out', 'inout', 'cpp_header'])
+                  'void', 'volatile', 'while'])
+
+class AIDLKeyword(Keyword):
+    VALUES = Keyword.VALUES | {'parcelable', 'union', 'oneway',
+                  'in', 'out', 'inout', 'cpp_header'}
 
 class Modifier(Keyword):
     VALUES = set(['abstract', 'default', 'final', 'native', 'private',
                   'protected', 'public', 'static', 'strictfp', 'synchronized',
-                  'transient', 'volatile', 'oneway', 'in', 'out', 'inout', 'const'])
+                  'transient', 'volatile'])
+
+class AIDLModifier(Modifier):
+    VALUES = Modifier.VALUES | {'oneway', 'in', 'out', 'inout', 'const'}
 
 class BasicType(Keyword):
     VALUES = set(['boolean', 'byte', 'char', 'double',
@@ -173,10 +179,11 @@ class JavaTokenizer(object):
 
     IDENT_PART_CATEGORIES = set(['Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Mc', 'Mn', 'Nd', 'Nl', 'Pc', 'Sc'])
 
-    def __init__(self, data: str | bytes, ignore_errors=False):
+    def __init__(self, data: str | bytes, ignore_errors=False, is_aidl=False):
         self.data = data
         self.ignore_errors = ignore_errors
         self.errors = []
+        self.is_aidl = is_aidl
 
         # Rows and columns both start at 1
         self.current_line = 1
@@ -188,9 +195,15 @@ class JavaTokenizer(object):
             self.operators[len(v) - 1].add(v)
 
         self.whitespace_consumer = re.compile(r'[^\s]')
-
         self.javadoc = None
 
+    @property
+    def keyword_ty(self) -> type:
+        return AIDLKeyword if self.is_aidl else Keyword
+
+    @property
+    def modifier_ty(self) -> type:
+        return AIDLModifier if self.is_aidl else Modifier
 
     def reset(self):
         self.i = 0
@@ -435,13 +448,13 @@ class JavaTokenizer(object):
             self.j += 1
 
         ident = self.data[self.i:self.j]
-        if ident in Keyword.VALUES:
-            token_type = Keyword
+        if ident in self.keyword_ty.VALUES:
+            token_type = self.keyword_ty
 
             if ident in BasicType.VALUES:
                 token_type = BasicType
-            elif ident in Modifier.VALUES:
-                token_type = Modifier
+            elif ident in self.modifier_ty.VALUES:
+                token_type = self.modifier_ty
 
         elif ident in Boolean.VALUES:
             token_type = Boolean
@@ -601,8 +614,8 @@ class JavaTokenizer(object):
 
 
 
-def tokenize(code, ignore_errors=False) -> JavaTokenStream:
-    tokenizer = JavaTokenizer(code, ignore_errors)
+def tokenize(code, ignore_errors=False, is_aidl=False) -> JavaTokenStream:
+    tokenizer = JavaTokenizer(code, ignore_errors, is_aidl)
     return tokenizer.tokenize()
 
 def reformat_tokens(tokens: JavaTokenStream) -> str:

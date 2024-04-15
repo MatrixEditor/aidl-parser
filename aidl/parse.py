@@ -24,52 +24,52 @@ from aidl.parser import Parser
 from aidl.tokenizer import tokenize
 from aidl.tree import Declaration, Expression, Type, CompilationUnit
 
-def parse_expression(exp: str) -> Expression:
+def parse_expression(exp: str, is_aidl=False) -> Expression:
     if not exp.endswith(';'):
         exp = exp + ';'
 
-    tokens = tokenize(exp)
+    tokens = tokenize(exp, is_aidl=is_aidl)
     parser = Parser(tokens)
 
     return parser.parse_expression()
 
-def parse_member_signature(sig: str) -> Declaration:
+def parse_member_signature(sig: str, is_aidl=False) -> Declaration:
     if not sig.endswith(';'):
         sig = sig + ';'
 
-    tokens = tokenize(sig)
+    tokens = tokenize(sig, is_aidl=is_aidl)
     parser = Parser(tokens)
 
     return parser.parse_member_declaration()
 
-def parse_constructor_signature(sig: str) -> Declaration:
+def parse_constructor_signature(sig: str, is_aidl=False) -> Declaration:
     # Add an empty body to the signature, replacing a ; if necessary
     if sig.endswith(';'):
         sig = sig[:-1]
     sig = sig + '{ }'
 
-    tokens = tokenize(sig)
+    tokens = tokenize(sig, is_aidl=is_aidl)
     parser = Parser(tokens)
 
     return parser.parse_member_declaration()
 
-def parse_type(string: str) -> Type:
-    tokens = tokenize(string)
+def parse_type(string: str, is_aidl=False) -> Type:
+    tokens = tokenize(string, is_aidl=is_aidl)
     parser = Parser(tokens)
 
     return parser.parse_type()
 
-def parse_type_signature(sig: str) -> Declaration:
+def parse_type_signature(sig: str, is_aidl=False) -> Declaration:
     if sig.endswith(';'):
         sig = sig[:-1]
     sig = sig + '{ }'
 
-    tokens = tokenize(sig)
+    tokens = tokenize(sig, is_aidl=is_aidl)
     parser = Parser(tokens)
 
     return parser.parse_class_or_interface_declaration()
 
-def fromstring(s: str | bytes) -> CompilationUnit:
-    tokens = tokenize(s)
+def fromstring(s: str | bytes, is_aidl=False) -> CompilationUnit:
+    tokens = tokenize(s, is_aidl=is_aidl)
     parser = Parser(tokens)
     return parser.parse()

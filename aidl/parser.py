@@ -36,54 +36,7 @@ from aidl.tokenizer import (
 ENABLE_DEBUG_SUPPORT = False
 
 def parse_debug(method):
-    global ENABLE_DEBUG_SUPPORT
-
-    if ENABLE_DEBUG_SUPPORT:
-        def _method(self):
-            if not hasattr(self, 'recursion_depth'):
-                self.recursion_depth = 0
-
-            if self.debug:
-                depth = "%02d" % (self.recursion_depth,)
-                token = six.text_type(self.tokens.look())
-                start_value = self.tokens.look().value
-                name = method.__name__
-                sep = ("-" * self.recursion_depth)
-                e_message = ""
-
-                print("%s %s> %s(%s)" % (depth, sep, name, token))
-
-                self.recursion_depth += 1
-
-                try:
-                    r = method(self)
-
-                except JavaSyntaxError as e:
-                    e_message = e.description
-                    raise
-
-                except Exception as e:
-                    e_message = six.text_type(e)
-                    raise
-
-                finally:
-                    token = six.text_type(self.tokens.last())
-                    print("%s <%s %s(%s, %s) %s" %
-                        (depth, sep, name, start_value, token, e_message))
-                    self.recursion_depth -= 1
-            else:
-                self.recursion_depth += 1
-                try:
-                    r = method(self)
-                finally:
-                    self.recursion_depth -= 1
-
-            return r
-
-        return _method
-
-    else:
-        return method
+    return method
 
 # ------------------------------------------------------------------------------
 # ---- Parsing exception ----
@@ -123,6 +76,7 @@ class Parser(object):
         self.tokens.set_default(EndOfInput(None))
 
         self.debug = False
+        self.tc = 0
 
 # ------------------------------------------------------------------------------
 # ---- Debug control ----
@@ -1139,7 +1093,7 @@ class Parser(object):
         if self.would_accept('{'):
             body = self.parse_block()
         else:
-            code = self.parse_interface_method_declarator_index()
+            code = self.parse_interface_method_declarator_transaction_code()
 
             self.accept(';')
 
@@ -1162,7 +1116,7 @@ class Parser(object):
         if self.would_accept('{'):
             body = self.parse_block()
         else:
-            code = self.parse_interface_method_declarator_index()
+            code = self.parse_interface_method_declarator_transaction_code()
             self.accept(';')
 
         return tree.MethodDeclaration(parameters=parameters,
@@ -1194,7 +1148,9 @@ class Parser(object):
             self.tokens.next()
             return int(self.tokens.value.value)
 
-        return None
+        code = self.tc
+        self.tc += 1
+        return code
 
 # ------------------------------------------------------------------------------
 # -- Parameters and variables --
