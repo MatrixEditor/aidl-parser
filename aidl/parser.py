@@ -76,7 +76,7 @@ class Parser(object):
         self.tokens.set_default(EndOfInput(None))
 
         self.debug = False
-        self.tc = 0
+        self.tc = 1
 
 # ------------------------------------------------------------------------------
 # ---- Debug control ----
@@ -1146,7 +1146,7 @@ class Parser(object):
         if self.would_accept("="):
             self.accept("=")
             self.tokens.next()
-            return int(self.tokens.value.value)
+            self.tc = int(self.tokens.value.value)
 
         code = self.tc
         self.tc += 1
